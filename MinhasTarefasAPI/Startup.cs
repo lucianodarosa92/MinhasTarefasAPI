@@ -1,16 +1,14 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MinhasTarefasAPI.DataBase;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MinhasTarefasAPI.Models;
+using MinhasTarefasAPI.Respositories;
+using MinhasTarefasAPI.Respositories.Interfaces;
 
 namespace MinhasTarefasAPI
 {
@@ -33,12 +31,17 @@ namespace MinhasTarefasAPI
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddDbContext<MinhasTarefasContext>(op => {
+            services.AddDbContext<MinhasTarefasContext>(op =>
+            {
                 op.UseSqlite("Data Source=DataBase\\MinhasTarefas.db");
             });
+
+            services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+            services.AddScoped<ITarefaRepository, TarefaRepository>();
+
+            services.AddDefaultIdentity<ApplicationUser>().AddEntityFrameworkStores<MinhasTarefasContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +58,7 @@ namespace MinhasTarefasAPI
                 app.UseHsts();
             }
 
+            app.UseAuthentication();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();

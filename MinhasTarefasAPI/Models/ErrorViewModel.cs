@@ -1,5 +1,3 @@
-using System;
-
 namespace MinhasTarefasAPI.Models
 {
     public class ErrorViewModel
