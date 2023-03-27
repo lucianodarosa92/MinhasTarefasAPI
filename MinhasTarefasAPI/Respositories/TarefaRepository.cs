@@ -1,10 +1,11 @@
 ﻿using MinhasTarefasAPI.DataBase;
 using MinhasTarefasAPI.Models;
+using MinhasTarefasAPI.Respositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MinhasTarefasAPI.Respositories.Interfaces
+namespace MinhasTarefasAPI.Respositories
 {
     public class TarefaRepository : ITarefaRepository
     {
@@ -21,7 +22,7 @@ namespace MinhasTarefasAPI.Respositories.Interfaces
 
             if (dataUltimaSincronizacao != null)
             {
-                query = query.Where(a => a.Criado >= dataUltimaSincronizacao | a.Atualizado >= dataUltimaSincronizacao);
+                query.Where(a => a.Criado >= dataUltimaSincronizacao | a.Atualizado >= dataUltimaSincronizacao);
             }
 
             return query.ToList<Tarefa>();
@@ -29,7 +30,8 @@ namespace MinhasTarefasAPI.Respositories.Interfaces
 
         public List<Tarefa> Sincronizacao(List<Tarefa> tarefas)
         {
-            var tarefasNovas = tarefas.Where(a => a.IdTarefaApi == 0).AsQueryable();
+            var tarefasNovas = tarefas.Where(a => a.IdTarefaApi == 0).ToList();
+            var tarefasAtualizadasOuExcluidas = tarefas.Where(a => a.IdTarefaApi != 0).ToList();
 
             // cadastrar novos registros
             if (tarefasNovas.Count() > 0)
@@ -39,8 +41,6 @@ namespace MinhasTarefasAPI.Respositories.Interfaces
                     _banco.Tarefas.Add(tarefa);
                 }
             }
-
-            var tarefasAtualizadasOuExcluidas = tarefas.Where(a => a.IdTarefaApi != 0 | a.Excluido == true).AsQueryable();
 
             // atualização de registros excluidos
             if (tarefasAtualizadasOuExcluidas.Count() > 0)

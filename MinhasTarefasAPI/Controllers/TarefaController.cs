@@ -16,18 +16,27 @@ namespace MinhasTarefasAPI.Controllers
         private readonly ITarefaRepository _tarefaRepository;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public TarefaController(ITarefaRepository tarefaRepository)
+        public TarefaController(ITarefaRepository tarefaRepository, UserManager<ApplicationUser> userManager)
         {
             _tarefaRepository = tarefaRepository;
+            _userManager = userManager;
         }
 
         [Authorize]
-        public ActionResult Sincronizacao([FromBody] List<Tarefa> tarefas)
+        [HttpPost("sincronizar")]
+        public ActionResult Sincronizar([FromBody] List<Tarefa> tarefas)
         {
-            return View();
+            return Ok(_tarefaRepository.Sincronizacao(tarefas));
+        }
+
+        [HttpGet("modelo")]
+        public ActionResult Modelo()
+        {
+            return Ok(new Tarefa());
         }
 
         [Authorize]
+        [HttpGet("restaurar")]
         public ActionResult Restaurar(DateTime data)
         {
             var usuario = _userManager.GetUserAsync(HttpContext.User).Result;
