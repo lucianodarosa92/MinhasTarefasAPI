@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +10,7 @@ using MinhasTarefasAPI.DataBase;
 using MinhasTarefasAPI.Models;
 using MinhasTarefasAPI.Respositories;
 using MinhasTarefasAPI.Respositories.Interfaces;
+using System.Threading.Tasks;
 
 namespace MinhasTarefasAPI
 {
@@ -42,7 +44,16 @@ namespace MinhasTarefasAPI
                     options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
 
-            services.AddDefaultIdentity<ApplicationUser>().AddEntityFrameworkStores<MinhasTarefasContext>();
+            services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<MinhasTarefasContext>();
+
+            services.ConfigureApplicationCookie(options=> 
+            {
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    context.Response.StatusCode = 401;
+                    return Task.CompletedTask;
+                };
+            });
 
             //services.Configure<CookiePolicyOptions>(options =>
             //{
