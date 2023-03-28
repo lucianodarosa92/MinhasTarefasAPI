@@ -7,5 +7,7 @@ namespace MinhasTarefasAPI.Respositories.Interfaces
         void Cadastrar(ApplicationUser Usuario, string senha);
 
         ApplicationUser Obter(string email, string senha);
+
+        ApplicationUser Obter(string Id);
     }
 }

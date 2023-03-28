@@ -17,12 +17,14 @@ namespace MinhasTarefasAPI.Controllers
     public class UsuarioController : ControllerBase
     {
         private readonly IUsuarioRepository _usuarioRepository;
+        private readonly ITokenRepository _tokenRepository;
         private readonly SignInManager<ApplicationUser> _signmanager;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public UsuarioController(IUsuarioRepository usuarioRepository, SignInManager<ApplicationUser> signmanager, UserManager<ApplicationUser> userManager)
+        public UsuarioController(IUsuarioRepository usuarioRepository, ITokenRepository tokenRepository, SignInManager<ApplicationUser> signmanager, UserManager<ApplicationUser> userManager)
         {
             _usuarioRepository = usuarioRepository;
+            _tokenRepository = tokenRepository;
             _signmanager = signmanager;
             _userManager = userManager;
         }
@@ -42,10 +44,7 @@ namespace MinhasTarefasAPI.Controllers
                     //login no entity
                     //_signmanager.SignInAsync(usuario, false);
 
-                    //no futuro retorna o token (JWT)
-                    object token = BuildToken(usuario);
-                    
-                    return Ok(token);
+                    return GerarToken(usuario);
                 }
                 else
                 {
@@ -56,30 +55,6 @@ namespace MinhasTarefasAPI.Controllers
             {
                 return UnprocessableEntity(ModelState);
             }
-        }
-
-        private object BuildToken(ApplicationUser usuario)
-        {
-            var claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
-                new Claim(JwtRegisteredClaimNames.Sub, usuario.Id)
-            };
-
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("chave-api-jwt-minhas-tarefas")); // Recomento -> appsettings.json
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var expiration = DateTime.UtcNow.AddHours(1);
-
-            var token = new JwtSecurityToken(
-                issuer: null,
-                audience: null,
-                claims: claims,
-                expires: expiration,
-                signingCredentials: credentials
-            );
-
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return new { token = tokenString, expiration = expiration };
         }
 
         [HttpPost("")]
@@ -112,6 +87,74 @@ namespace MinhasTarefasAPI.Controllers
             {
                 return UnprocessableEntity(ModelState);
             }
+        }
+
+        [HttpPost("")]
+        public ActionResult Renovar([FromBody] TokenDTO tokenDTO)
+        {
+            var refreshTokenDB = _tokenRepository.Obter(tokenDTO.RefreshToken);
+
+            if (refreshTokenDB == null)
+            {
+                return NotFound();
+            }
+
+            //atualiza token antigo
+            refreshTokenDB.Atualizado = DateTime.Now;
+            refreshTokenDB.Utilizado = true;
+            _tokenRepository.Atualizar(refreshTokenDB);
+
+            //gera token novo
+            var usuario = _usuarioRepository.Obter(refreshTokenDB.UsuarioId);
+            
+            return GerarToken(usuario);
+        }
+
+        private TokenDTO BuildToken(ApplicationUser usuario)
+        {
+            var claims = new[] {
+                new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, usuario.Id)
+            };
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("chave-api-jwt-minhas-tarefas")); // Recomento -> appsettings.json
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var expiration = DateTime.UtcNow.AddHours(1);
+
+            var token = new JwtSecurityToken(
+                issuer: null,
+                audience: null,
+                claims: claims,
+                expires: expiration,
+                signingCredentials: credentials
+            );
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            var refreshToken = Guid.NewGuid().ToString().Replace("-", "");
+
+            var expirationRefreshToken = DateTime.UtcNow.AddHours(2);
+
+            return new TokenDTO { Token = tokenString, Expiration = expiration, RefreshToken = refreshToken, ExpirationRefreshToken = expirationRefreshToken };
+        }
+
+        private ActionResult GerarToken(ApplicationUser usuario)
+        {
+            var token = BuildToken(usuario);
+
+            var tokenModel = new Token()
+            {
+                RefreshToken = token.RefreshToken,
+                ExpirationToken = token.Expiration,
+                ExpirationRefreshToken = token.ExpirationRefreshToken,
+                Usuario = usuario,
+                Criado = DateTime.Now,
+                Utilizado = false
+            };
+
+            _tokenRepository.Cadastrar(tokenModel);
+
+            return Ok(token);
         }
     }
 }

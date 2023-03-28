@@ -32,6 +32,11 @@ namespace MinhasTarefasAPI.Respositories
             }
         }
 
+        ApplicationUser IUsuarioRepository.Obter(string Id)
+        {
+            return _userManager.FindByIdAsync(Id).Result;
+        }
+
         void IUsuarioRepository.Cadastrar(ApplicationUser Usuario, string senha)
         {
             var result = _userManager.CreateAsync(Usuario, senha).Result;

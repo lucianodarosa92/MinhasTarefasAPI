@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MinhasTarefasAPI.DataBase;
 
 namespace MinhasTarefasAPI.Migrations
 {
     [DbContext(typeof(MinhasTarefasContext))]
-    partial class MinhasTarefasContextModelSnapshot : ModelSnapshot
+    [Migration("20230328185037_Token")]
+    partial class Token
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -290,7 +292,7 @@ namespace MinhasTarefasAPI.Migrations
             modelBuilder.Entity("MinhasTarefasAPI.Models.Token", b =>
                 {
                     b.HasOne("MinhasTarefasAPI.Models.ApplicationUser", "Usuario")
-                        .WithMany("Tokens")
+                        .WithMany()
                         .HasForeignKey("UsuarioId");
                 });
 #pragma warning restore 612, 618
