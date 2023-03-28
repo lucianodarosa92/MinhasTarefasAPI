@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using MinhasTarefasAPI.Models;
 using MinhasTarefasAPI.Respositories.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace MinhasTarefasAPI.Controllers
 {
@@ -36,10 +40,12 @@ namespace MinhasTarefasAPI.Controllers
                 if (usuario != null)
                 {
                     //login no entity
-                    _signmanager.SignInAsync(usuario, false);
+                    //_signmanager.SignInAsync(usuario, false);
 
                     //no futuro retorna o token (JWT)
-                    return Ok();
+                    object token = BuildToken(usuario);
+                    
+                    return Ok(token);
                 }
                 else
                 {
@@ -50,6 +56,30 @@ namespace MinhasTarefasAPI.Controllers
             {
                 return UnprocessableEntity(ModelState);
             }
+        }
+
+        private object BuildToken(ApplicationUser usuario)
+        {
+            var claims = new[] {
+                new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, usuario.Id)
+            };
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("chave-api-jwt-minhas-tarefas")); // Recomento -> appsettings.json
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var expiration = DateTime.UtcNow.AddHours(1);
+
+            var token = new JwtSecurityToken(
+                issuer: null,
+                audience: null,
+                claims: claims,
+                expires: expiration,
+                signingCredentials: credentials
+            );
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return new { token = tokenString, expiration = expiration };
         }
 
         [HttpPost("")]
