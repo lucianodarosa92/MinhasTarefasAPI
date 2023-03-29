@@ -9,8 +9,8 @@ using MinhasTarefasAPI.DataBase;
 namespace MinhasTarefasAPI.Migrations
 {
     [DbContext(typeof(MinhasTarefasContext))]
-    [Migration("20230328195505_addFkToken")]
-    partial class addFkToken
+    [Migration("20230328210053_BancoInicial")]
+    partial class BancoInicial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

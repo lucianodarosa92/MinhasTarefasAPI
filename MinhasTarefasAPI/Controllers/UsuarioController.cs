@@ -57,7 +57,7 @@ namespace MinhasTarefasAPI.Controllers
             }
         }
 
-        [HttpPost("")]
+        [HttpPost("cadastrar")]
         public ActionResult Cadastrar([FromBody] UsuarioDTO usuarioDTO)
         {
             if (ModelState.IsValid)
@@ -89,7 +89,7 @@ namespace MinhasTarefasAPI.Controllers
             }
         }
 
-        [HttpPost("")]
+        [HttpPost("renovar")]
         public ActionResult Renovar([FromBody] TokenDTO tokenDTO)
         {
             var refreshTokenDB = _tokenRepository.Obter(tokenDTO.RefreshToken);
