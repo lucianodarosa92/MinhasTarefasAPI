@@ -1,10 +1,7 @@
 ﻿using MinhasTarefasAPI.DataBase;
 using MinhasTarefasAPI.Models;
 using MinhasTarefasAPI.Respositories.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MinhasTarefasAPI.Respositories
 {
@@ -19,7 +16,7 @@ namespace MinhasTarefasAPI.Respositories
 
         public Token Obter(string refreshToken)
         {
-            return _banco.Token.FirstOrDefault(a=> a.RefreshToken == refreshToken && a.Utilizado == false);
+            return _banco.Token.FirstOrDefault(a => a.RefreshToken == refreshToken && a.Utilizado == false);
         }
 
         public void Cadastrar(Token token)

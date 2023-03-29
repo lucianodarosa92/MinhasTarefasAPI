@@ -106,7 +106,7 @@ namespace MinhasTarefasAPI.Controllers
 
             //gera token novo
             var usuario = _usuarioRepository.Obter(refreshTokenDB.UsuarioId);
-            
+
             return GerarToken(usuario);
         }
 
