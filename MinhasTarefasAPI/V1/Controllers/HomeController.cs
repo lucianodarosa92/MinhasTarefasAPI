@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MinhasTarefasAPI.Models;
+using MinhasTarefasAPI.V1.Models;
 using System.Diagnostics;
 
-namespace MinhasTarefasAPI.Controllers
+namespace MinhasTarefasAPI.V1.Controllers
 {
     public class HomeController : Controller
     {

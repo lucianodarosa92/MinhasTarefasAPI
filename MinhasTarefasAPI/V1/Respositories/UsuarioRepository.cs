@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using MinhasTarefasAPI.Models;
-using MinhasTarefasAPI.Respositories.Interfaces;
+using MinhasTarefasAPI.V1.Models;
+using MinhasTarefasAPI.V1.Respositories.Interfaces;
 using System;
 using System.Text;
 
-namespace MinhasTarefasAPI.Respositories
+namespace MinhasTarefasAPI.V1.Respositories
 {
     public class UsuarioRepository : IUsuarioRepository
     {

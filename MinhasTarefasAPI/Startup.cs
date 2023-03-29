@@ -4,14 +4,21 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.IdentityModel.Tokens;
 using MinhasTarefasAPI.DataBase;
-using MinhasTarefasAPI.Models;
-using MinhasTarefasAPI.Respositories;
-using MinhasTarefasAPI.Respositories.Interfaces;
+using MinhasTarefasAPI.Helpers.Swagger;
+using MinhasTarefasAPI.V1.Models;
+using MinhasTarefasAPI.V1.Respositories;
+using MinhasTarefasAPI.V1.Respositories.Interfaces;
+using Swashbuckle.AspNetCore.Swagger;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -43,10 +50,67 @@ namespace MinhasTarefasAPI
             services.AddScoped<ITarefaRepository, TarefaRepository>();
             services.AddScoped<ITokenRepository, TokenRepository>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+            services.AddMvc(config =>
+            {
+                config.ReturnHttpNotAcceptable = true;
+                config.InputFormatters.Add(new XmlSerializerInputFormatter(config));
+                config.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+            })
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddJsonOptions(
                     options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
+
+            services.AddApiVersioning(cfg =>
+            {
+                cfg.ReportApiVersions = true;
+                //cfg.ApiVersionReader = new HeaderApiVersionReader("api-version");
+                cfg.AssumeDefaultVersionWhenUnspecified = true;
+                cfg.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+            });
+
+            services.AddSwaggerGen(cfg =>
+            {
+                cfg.AddSecurityDefinition("Bearer", new ApiKeyScheme() {
+                    In = "header",
+                    Type = "apiKey",
+                    Description = "Adicione o JSON Web Token(JWT) para autenticar.",
+                    Name = "Authorization"
+                });
+
+                var security = new Dictionary<string, IEnumerable<string>>()
+                {
+                    { "Bearer", new string[] { } }
+                };
+                cfg.AddSecurityRequirement(security);
+
+                cfg.ResolveConflictingActions(apiDescription => apiDescription.First());
+
+                cfg.SwaggerDoc("v1.0", new Swashbuckle.AspNetCore.Swagger.Info() { Title = "MinhasTarefasAPI - V1.0", Version = "v1.0" });
+
+                var caminhoProjeto = PlatformServices.Default.Application.ApplicationBasePath;
+                var nomeProjeto = $"{PlatformServices.Default.Application.ApplicationName}.xml";
+                var CaminhoXML = Path.Combine(caminhoProjeto, nomeProjeto);
+
+                //cfg.IncludeXmlComments(CaminhoXML);
+
+                cfg.DocInclusionPredicate((docName, apiDesc) =>
+                {
+                    var actionApiVersionModel = apiDesc.ActionDescriptor?.GetApiVersion();
+                    // would mean this action is unversioned and should be included everywhere
+                    if (actionApiVersionModel == null)
+                    {
+                        return true;
+                    }
+                    if (actionApiVersionModel.DeclaredApiVersions.Any())
+                    {
+                        return actionApiVersionModel.DeclaredApiVersions.Any(v => $"v{v.ToString()}" == docName);
+                    }
+                    return actionApiVersionModel.ImplementedApiVersions.Any(v => $"v{v.ToString()}" == docName);
+                });
+
+                cfg.OperationFilter<ApiVersionOperationFilter>();
+            });
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<MinhasTarefasContext>()
@@ -115,11 +179,20 @@ namespace MinhasTarefasAPI
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
-            app.UseMvc(routes =>
+            app.UseMvc();
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapRoute(
+            //        name: "default",
+            //        template: "{controller=Home}/{action=Index}/{id?}");
+            //});
+
+            app.UseSwagger();
+            app.UseSwaggerUI(cfg =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                cfg.SwaggerEndpoint("/swagger/v1.0/swagger.json", "MinhasTarefasAPI - V1.0");
+
+                cfg.RoutePrefix = string.Empty;
             });
         }
     }

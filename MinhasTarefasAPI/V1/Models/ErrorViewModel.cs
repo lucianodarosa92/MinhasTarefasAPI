@@ -1,4 +1,4 @@
-namespace MinhasTarefasAPI.Models
+namespace MinhasTarefasAPI.V1.Models
 {
     public class ErrorViewModel
     {

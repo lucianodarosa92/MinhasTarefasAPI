@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MinhasTarefasAPI.Models
+namespace MinhasTarefasAPI.V1.Models
 {
     public class UsuarioDTO
     {

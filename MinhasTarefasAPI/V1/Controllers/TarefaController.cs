@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MinhasTarefasAPI.Models;
-using MinhasTarefasAPI.Respositories.Interfaces;
+using MinhasTarefasAPI.V1.Models;
+using MinhasTarefasAPI.V1.Respositories.Interfaces;
 using System;
 using System.Collections.Generic;
 
-namespace MinhasTarefasAPI.Controllers
+namespace MinhasTarefasAPI.V1.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
 
     public class TarefaController : Controller
     {

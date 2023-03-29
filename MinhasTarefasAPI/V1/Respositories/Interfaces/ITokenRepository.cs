@@ -1,6 +1,6 @@
-﻿using MinhasTarefasAPI.Models;
+﻿using MinhasTarefasAPI.V1.Models;
 
-namespace MinhasTarefasAPI.Respositories.Interfaces
+namespace MinhasTarefasAPI.V1.Respositories.Interfaces
 {
     public interface ITokenRepository
     {
